@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+import os
 
 # Внос на всички routers
 from deepseek_api import router as deepseek_router
@@ -32,3 +34,9 @@ app.include_router(merge_router, prefix="/merge")
 @app.get("/")
 def root():
     return {"message": "🚀 GPT-CODER X ULTRA Backend is running!"}
+
+# ✅ Сървиране на статични JSON файлове от .well-known
+if not os.path.exists(".well-known"):
+    os.makedirs(".well-known")
+
+app.mount("/.well-known", StaticFiles(directory=".well-known"), name="wellknown")
