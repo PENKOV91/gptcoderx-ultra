@@ -1,0 +1,7 @@
+(инсталира се с pip install -r requirements.txt)
+
+
+fastapi
+uvicorn
+requests
+python-dotenv
