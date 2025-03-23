@@ -1,5 +1,8 @@
 import os
 import requests
+from fastapi import APIRouter
+
+router = APIRouter()
 
 DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
 
@@ -28,3 +31,12 @@ def generate_reasoning(prompt: str):
     payload = build_payload(prompt, model="deepseek-reasoner")
     response = requests.post(API_URL, headers=HEADERS, json=payload)
     return response.json()
+
+# 🧩 Добавяме route-ите тук, за да работят с include_router()
+@router.post("/deepseek")
+def code_with_deepseek(data: dict):
+    return generate_code(data["prompt"])
+
+@router.post("/reasoner")
+def code_with_reasoner(data: dict):
+    return generate_reasoning(data["prompt"])
