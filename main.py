@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 import os
 
 # Внос на всички routers
@@ -40,3 +41,8 @@ if not os.path.exists(".well-known"):
     os.makedirs(".well-known")
 
 app.mount("/.well-known", StaticFiles(directory=".well-known"), name="wellknown")
+
+# ✅ Принудително ръчно сервиране на openapi.json от .well-known
+@app.get("/openapi.json", include_in_schema=False)
+def custom_openapi():
+    return FileResponse(".well-known/openapi.json", media_type="application/json")
