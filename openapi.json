@@ -30,7 +30,9 @@
           }
         },
         "responses": {
-          "200": { "description": "Генериран код от DeepSeek" }
+          "200": {
+            "description": "Генериран код от DeepSeek"
+          }
         }
       }
     },
@@ -53,7 +55,9 @@
           }
         },
         "responses": {
-          "200": { "description": "Логически анализ от Reasoner" }
+          "200": {
+            "description": "Логически анализ от Reasoner"
+          }
         }
       }
     },
@@ -76,7 +80,9 @@
           }
         },
         "responses": {
-          "200": { "description": "Резултати от GitHub" }
+          "200": {
+            "description": "Резултати от GitHub"
+          }
         }
       }
     },
@@ -100,7 +106,9 @@
           }
         },
         "responses": {
-          "200": { "description": "Резултати от WebPilot" }
+          "200": {
+            "description": "Резултати от WebPilot"
+          }
         }
       }
     },
@@ -130,7 +138,9 @@
           }
         },
         "responses": {
-          "200": { "description": "Обединени резултати, подготвени за генерация" }
+          "200": {
+            "description": "Обединени резултати, подготвени за генерация"
+          }
         }
       }
     }
