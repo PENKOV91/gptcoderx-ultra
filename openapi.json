@@ -5,6 +5,11 @@
     "version": "1.0.0",
     "description": "Персонализиран GPT агент за създаване на MQL4/MQL5/Python код чрез DeepSeek-Coder-V2 и Reasoner. Поддържа извличане от GitHub, WebPilot и MQL5, както и логическа обработка от DeepSeek R1."
   },
+  "servers": [
+    {
+      "url": "https://gptcoderx-ultra.onrender.com"
+    }
+  ],
   "paths": {
     "/code/deepseek": {
       "post": {
