@@ -1,61 +1,34 @@
-from fastapi import FastAPI, Request
-from deepseek_api import generate_code, generate_reasoning
-from github_search import search_github_repos
-from webpilot_search import search_webpilot
-from merge import merge_results
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+# Внос на всички routers
+from deepseek_api import router as deepseek_router
+from github_search import router as github_router
+from webpilot_search import router as webpilot_router
+from merge import router as merge_router
 
 app = FastAPI(
     title="GPT-CODER X ULTRA",
-    description="""
-    Персонализиран GPT агент за създаване на MQL4/MQL5/Python код чрез DeepSeek-Coder-V2 и Reasoner.
-    Поддържа извличане от GitHub, WebPilot и MQL5, както и reasoning от DeepSeek R1.
-    """,
+    description="Персонализиран GPT агент за създаване на MQL4/MQL5/Python код чрез DeepSeek, GitHub, WebPilot и Reasoner.",
     version="1.0.0"
 )
 
+# CORS - за да може да се вика отвън
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Може да ограничиш към конкретен домейн
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Включване на всички routers
+app.include_router(deepseek_router, prefix="/code")
+app.include_router(github_router, prefix="/search")
+app.include_router(webpilot_router, prefix="/search")
+app.include_router(merge_router, prefix="/merge")
+
+# Root endpoint (за проверка)
 @app.get("/")
 def root():
-    return {"message": "🔥 GPT-CODER X ULTRA backend is live!"}
-
-@app.post("/code/deepseek")
-def code_with_deepseek(data: dict):
-    """
-    Генериране на код с DeepSeek-Coder-V2
-    """
-    prompt = data.get("prompt", "")
-    return generate_code(prompt)
-
-@app.post("/code/reasoner")
-def code_with_reasoner(data: dict):
-    """
-    Генериране на логически анализ чрез DeepSeek Reasoner
-    """
-    prompt = data.get("prompt", "")
-    return generate_reasoning(prompt)
-
-@app.post("/search/github")
-def github_search(data: dict):
-    """
-    Извличане на код/репозитории от GitHub
-    """
-    query = data.get("query", "")
-    return search_github_repos(query)
-
-@app.post("/search/webpilot")
-def webpilot_search_endpoint(data: dict):
-    """
-    Web scraping чрез WebPilot
-    """
-    link = data.get("link", "")
-    query = data.get("query", "")
-    return search_webpilot(link, query)
-
-@app.post("/merge/results")
-def merge_all(data: dict):
-    """
-    Обединяване на резултати от GitHub, WebPilot, MQL5
-    """
-    github_results = data.get("github_results", [])
-    webpilot_results = data.get("webpilot_results", {})
-    mql5_results = data.get("mql5_results", [])
-    return merge_results(github_results, webpilot_results, mql5_results)
+    return {"message": "🚀 GPT-CODER X ULTRA Backend is running!"}
