@@ -1,12 +1,16 @@
 import requests
+from fastapi import APIRouter
+
+router = APIRouter()
 
 WEBPILOT_API = "https://gpts.webpilot.ai/gpts_webpilot_ai__jit_plugin.webPageReader"
 
-def webpilot_deep_search(link: str, query: str):
+@router.post("/webpilot")
+def search_webpilot(link: str, query: str):
     payload = {
         "link": link,
         "ur": query,
-        "lp": True  # ⬅️ няма l = език, ще работи автоматично
+        "lp": True  # без език, автоматично
     }
 
     try:
