@@ -33,14 +33,7 @@
         },
         "responses": {
           "200": {
-            "description": "Генериран код от DeepSeek",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
+            "description": "Генериран код от DeepSeek"
           }
         }
       }
@@ -67,14 +60,7 @@
         },
         "responses": {
           "200": {
-            "description": "Логически анализ от Reasoner",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
+            "description": "Логически анализ от Reasoner"
           }
         }
       }
@@ -101,17 +87,7 @@
         },
         "responses": {
           "200": {
-            "description": "Резултати от GitHub",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "type": "object"
-                  }
-                }
-              }
-            }
+            "description": "Резултати от GitHub"
           }
         }
       }
@@ -141,14 +117,7 @@
         },
         "responses": {
           "200": {
-            "description": "Резултати от WebPilot",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
+            "description": "Резултати от WebPilot"
           }
         }
       }
@@ -186,18 +155,10 @@
         },
         "responses": {
           "200": {
-            "description": "Обединени резултати, подготвени за генерация",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
+            "description": "Обединени резултати, подготвени за генерация"
           }
         }
       }
     }
-  },
-  "components": {}
+  }
 }
