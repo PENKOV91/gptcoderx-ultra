@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any  # ✅ Добавен Any
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field, HttpUrl, validator
 from core.config import settings
@@ -51,7 +51,7 @@ class MergedItem(BaseModel):
     title: str
     content: str
     link: str
-    metadata: Dict[str, any]
+    metadata: Dict[str, Any]  # ✅ Поправено
     relevance_score: float
     last_updated: Optional[datetime]
 
