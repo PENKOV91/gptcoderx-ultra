@@ -9,7 +9,7 @@
   },
   "api": {
     "type": "openapi",
-    "url": "https://gptcoderx-ultra.onrender.com/.well-known/openapi.json",
+    "url": "https://gptcoderx-ultra.onrender.com/openapi.json",
     "is_user_authenticated": false
   }
 }
