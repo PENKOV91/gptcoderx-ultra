@@ -2,7 +2,7 @@
 import requests
 from fastapi import HTTPException
 
-async def make_api_request(
+def make_api_request(
     url: str,
     method: str = "GET",
     headers: dict = None,
