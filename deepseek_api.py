@@ -65,7 +65,7 @@ def query_deepseek(prompt: str, model: str, max_tokens: int, temperature: float)
         payload = build_payload(prompt, model, max_tokens, temperature)
         logger.info(f"Sending request to DeepSeek API with model: {model}")
 
-        response = requests.post(API_URL, headers=HEADERS, json=payload, timeout=30)
+        response = requests.post(API_URL, headers=HEADERS, json=payload, timeout=300)
         response.raise_for_status()
 
         data = response.json()
