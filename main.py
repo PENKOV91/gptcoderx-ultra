@@ -1,11 +1,13 @@
 import os
 import logging
+from datetime import datetime
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.requests import Request
 from fastapi.exceptions import RequestValidationError
+from fastapi.openapi.utils import get_openapi  # ✅ за автоматично openapi генериране
 
 # Импортиране на всички рутери
 from deepseek_api import router as deepseek_router
@@ -26,7 +28,7 @@ app = FastAPI(
     version="1.0.0",
     docs_url=None,
     redoc_url=None,
-    openapi_url=None,
+    openapi_url=None,  # ❗ Деактивира стандартния openapi endpoint, защото го правим custom
     on_startup=[lambda: logger.info("🚀 Сервирът стартира успешно!")],
     on_shutdown=[lambda: logger.info("🛑 Сервирът спира...")]
 )
@@ -36,14 +38,13 @@ app = FastAPI(
 # ==============================================
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # За production променете на конкретни домейни
+    allow_origins=["*"],  # За production — замени със списък от разрешени домейни
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["X-API-Version"]
 )
 
-# Добавяне на security headers
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
     response = await call_next(request)
@@ -109,7 +110,6 @@ WELL_KNOWN_DIR = ".well-known"
 
 @app.on_event("startup")
 async def startup_event():
-    # Създаване на директория ако не съществува
     os.makedirs(WELL_KNOWN_DIR, exist_ok=True)
     logger.info(f"Директория {WELL_KNOWN_DIR} е подготвена")
 
@@ -125,20 +125,24 @@ async def root():
 async def health_check():
     return JSONResponse(content={"status": "OK", "timestamp": datetime.utcnow().isoformat()})
 
+# ✅ Това е автоматично генерирания openapi.json, който GPTs и Swagger разбират
+@app.get("/openapi.json", include_in_schema=False)
+async def custom_openapi():
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+    )
+    return JSONResponse(content=openapi_schema)
+
 app.mount(
     "/.well-known",
     StaticFiles(directory=WELL_KNOWN_DIR),
     name="wellknown"
 )
 
-@app.get("/openapi.json", include_in_schema=False)
-async def custom_openapi():
-    return FileResponse(
-        f"{WELL_KNOWN_DIR}/openapi.json",
-        media_type="application/json",
-        headers={"X-API-Version": app.version}
-    )
-
+# Само ако искаш да тестваш локално
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(
