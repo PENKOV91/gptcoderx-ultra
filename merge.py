@@ -1,55 +1,134 @@
-from fastapi import APIRouter
-from pydantic import BaseModel
-from typing import List
+import logging
+from datetime import datetime
+from typing import List, Optional, Dict
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field, HttpUrl, validator
+from core.config import settings
 
-router = APIRouter()
+router = APIRouter(tags=["Data Merging"])
+logger = logging.getLogger(__name__)
 
 class GitHubItem(BaseModel):
-    name: str = ""
-    description: str = ""
-    url: str = ""
+    name: str = Field(..., min_length=1)
+    description: Optional[str] = Field(default="")
+    url: HttpUrl
+    stars: Optional[int] = Field(default=0, ge=0)
+    language: Optional[str] = Field(default=None)
+    last_updated: Optional[datetime] = Field(default=None)
+
+    @validator('name')
+    def validate_name(cls, v):
+        if not v.strip():
+            raise ValueError("Name cannot be empty")
+        return v
 
 class WebPilotResult(BaseModel):
-    title: str = ""
-    content: str = ""
-    link: str = ""
+    title: str = Field(..., min_length=1)
+    content: str = Field(..., min_length=10)
+    link: HttpUrl
+    source: Optional[str] = Field(default="Web")
+    relevance: Optional[float] = Field(default=0.0, ge=0.0, le=1.0)
 
 class MQL5Item(BaseModel):
-    title: str = ""
-    description: str = ""
-    url: str = ""
+    title: str = Field(..., min_length=1)
+    description: str = Field(..., min_length=10)
+    url: HttpUrl
+    votes: Optional[int] = Field(default=0, ge=0)
+    category: Optional[str] = Field(default=None)
 
 class MergeRequest(BaseModel):
-    github_results: List[GitHubItem] = []
-    webpilot_results: WebPilotResult = WebPilotResult()
-    mql5_results: List[MQL5Item] = []
+    github_results: List[GitHubItem] = Field(default_factory=list)
+    webpilot_results: List[WebPilotResult] = Field(default_factory=list)
+    mql5_results: List[MQL5Item] = Field(default_factory=list)
+    content_limit: Optional[int] = Field(
+        default=settings.DEFAULT_CONTENT_LIMIT,
+        ge=100,
+        le=5000
+    )
 
-@router.post("/results")
-def merge_results(data: MergeRequest):
-    merged = []
+class MergedItem(BaseModel):
+    source: str
+    title: str
+    content: str
+    link: str
+    metadata: Dict[str, any]
+    relevance_score: float
+    last_updated: Optional[datetime]
 
-    for item in data.github_results:
-        merged.append({
-            "source": "GitHub",
-            "title": item.name,
-            "content": item.description or "",
-            "link": item.url
-        })
+def calculate_relevance(item: dict) -> float:
+    # Примерна логика за релевантност
+    score = 0.0
+    if item['source'] == 'GitHub':
+        score = item.get('stars', 0) * 0.1
+    elif item['source'] == 'WebPilot':
+        score = item.get('relevance', 0.0)
+    return min(max(score, 0.0), 1.0)
 
-    if data.webpilot_results and data.webpilot_results.title:
-        merged.append({
-            "source": "WebPilot",
-            "title": data.webpilot_results.title,
-            "content": data.webpilot_results.content[:1500],
-            "link": data.webpilot_results.link
-        })
+@router.post("/results", response_model=List[MergedItem])
+async def merge_results(data: MergeRequest):
+    try:
+        merged = []
 
-    for item in data.mql5_results:
-        merged.append({
-            "source": "MQL5",
-            "title": item.title,
-            "content": item.description,
-            "link": item.url
-        })
+        # GitHub обработка
+        for item in data.github_results:
+            merged.append({
+                "source": "GitHub",
+                "title": item.name,
+                "content": item.description[:data.content_limit],
+                "link": str(item.url),
+                "metadata": {
+                    "stars": item.stars,
+                    "language": item.language,
+                    "last_updated": item.last_updated
+                },
+                "relevance_score": calculate_relevance({
+                    "source": "GitHub",
+                    "stars": item.stars
+                }),
+                "last_updated": item.last_updated
+            })
 
-    return merged
+        # WebPilot обработка
+        for item in data.webpilot_results:
+            merged.append({
+                "source": item.source or "WebPilot",
+                "title": item.title,
+                "content": item.content[:data.content_limit],
+                "link": str(item.link),
+                "metadata": {
+                    "source": item.source,
+                    "relevance": item.relevance
+                },
+                "relevance_score": item.relevance,
+                "last_updated": datetime.now()
+            })
+
+        # MQL5 обработка
+        for item in data.mql5_results:
+            merged.append({
+                "source": "MQL5",
+                "title": item.title,
+                "content": item.description[:data.content_limit],
+                "link": str(item.url),
+                "metadata": {
+                    "votes": item.votes,
+                    "category": item.category
+                },
+                "relevance_score": calculate_relevance({
+                    "source": "MQL5",
+                    "votes": item.votes
+                }),
+                "last_updated": None  # MQL5 не предоставя timestamp
+            })
+
+        # Сортиране по релевантност
+        merged.sort(key=lambda x: x['relevance_score'], reverse=True)
+
+        return merged
+
+    except Exception as e:
+        logger.error(f"Merge error: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Data merging failed: {str(e)}"
+        )
