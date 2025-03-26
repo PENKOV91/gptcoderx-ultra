@@ -1,12 +1,13 @@
 import logging
 from datetime import datetime
-from typing import List, Optional, Dict, Any  # ✅ Добавен Any
+from typing import List, Optional, Dict, Any
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field, HttpUrl, validator
 from core.config import settings
 
 router = APIRouter(tags=["Data Merging"])
 logger = logging.getLogger(__name__)
+
 
 class GitHubItem(BaseModel):
     name: str = Field(..., min_length=1)
@@ -22,6 +23,7 @@ class GitHubItem(BaseModel):
             raise ValueError("Name cannot be empty")
         return v
 
+
 class WebPilotResult(BaseModel):
     title: str = Field(..., min_length=1)
     content: str = Field(..., min_length=10)
@@ -29,12 +31,14 @@ class WebPilotResult(BaseModel):
     source: Optional[str] = Field(default="Web")
     relevance: Optional[float] = Field(default=0.0, ge=0.0, le=1.0)
 
+
 class MQL5Item(BaseModel):
     title: str = Field(..., min_length=1)
     description: str = Field(..., min_length=10)
     url: HttpUrl
     votes: Optional[int] = Field(default=0, ge=0)
     category: Optional[str] = Field(default=None)
+
 
 class MergeRequest(BaseModel):
     github_results: List[GitHubItem] = Field(default_factory=list)
@@ -46,14 +50,16 @@ class MergeRequest(BaseModel):
         le=5000
     )
 
+
 class MergedItem(BaseModel):
     source: str
     title: str
     content: str
     link: str
-    metadata: Dict[str, Any]  # ✅ Поправено
+    metadata: Dict[str, Any]
     relevance_score: float
     last_updated: Optional[datetime]
+
 
 def calculate_relevance(item: dict) -> float:
     score = 0.0
@@ -63,11 +69,18 @@ def calculate_relevance(item: dict) -> float:
         score = item.get('relevance', 0.0)
     return min(max(score, 0.0), 1.0)
 
-@router.post("/results", response_model=List[MergedItem])
+
+@router.post(
+    "/results",
+    response_model=List[MergedItem],
+    summary="Сливане на резултати от източници",
+    description="Обединява GitHub, WebPilot и MQL5 резултати в един списък с релевантност."
+)
 async def merge_results(data: MergeRequest):
     try:
         merged = []
 
+        # GitHub
         for item in data.github_results:
             merged.append({
                 "source": "GitHub",
@@ -86,6 +99,7 @@ async def merge_results(data: MergeRequest):
                 "last_updated": item.last_updated
             })
 
+        # WebPilot
         for item in data.webpilot_results:
             merged.append({
                 "source": item.source or "WebPilot",
@@ -100,6 +114,7 @@ async def merge_results(data: MergeRequest):
                 "last_updated": datetime.now()
             })
 
+        # MQL5
         for item in data.mql5_results:
             merged.append({
                 "source": "MQL5",
