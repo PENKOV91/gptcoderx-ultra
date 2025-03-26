@@ -11,8 +11,5 @@
     "type": "openapi",
     "url": "https://gptcoderx-ultra.onrender.com/.well-known/openapi.json",
     "is_user_authenticated": false
-  },
-  "logo_url": "https://gptcoderx-ultra.onrender.com/logo.png",
-  "contact_email": "penkov@gptcoderx-ultra.com",
-  "legal_info_url": "https://gptcoderx-ultra.onrender.com/legal"
+  }
 }
