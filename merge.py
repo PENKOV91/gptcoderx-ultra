@@ -41,7 +41,7 @@ class MergeRequest(BaseModel):
     webpilot_results: List[WebPilotResult] = Field(default_factory=list)
     mql5_results: List[MQL5Item] = Field(default_factory=list)
     content_limit: Optional[int] = Field(
-        default=settings.DEFAULT_CONTENT_LIMIT,
+        default=getattr(settings, "DEFAULT_CONTENT_LIMIT", 1000),
         ge=100,
         le=5000
     )
@@ -56,7 +56,6 @@ class MergedItem(BaseModel):
     last_updated: Optional[datetime]
 
 def calculate_relevance(item: dict) -> float:
-    # Примерна логика за релевантност
     score = 0.0
     if item['source'] == 'GitHub':
         score = item.get('stars', 0) * 0.1
@@ -69,7 +68,6 @@ async def merge_results(data: MergeRequest):
     try:
         merged = []
 
-        # GitHub обработка
         for item in data.github_results:
             merged.append({
                 "source": "GitHub",
@@ -88,7 +86,6 @@ async def merge_results(data: MergeRequest):
                 "last_updated": item.last_updated
             })
 
-        # WebPilot обработка
         for item in data.webpilot_results:
             merged.append({
                 "source": item.source or "WebPilot",
@@ -103,7 +100,6 @@ async def merge_results(data: MergeRequest):
                 "last_updated": datetime.now()
             })
 
-        # MQL5 обработка
         for item in data.mql5_results:
             merged.append({
                 "source": "MQL5",
@@ -118,10 +114,9 @@ async def merge_results(data: MergeRequest):
                     "source": "MQL5",
                     "votes": item.votes
                 }),
-                "last_updated": None  # MQL5 не предоставя timestamp
+                "last_updated": None
             })
 
-        # Сортиране по релевантност
         merged.sort(key=lambda x: x['relevance_score'], reverse=True)
 
         return merged
