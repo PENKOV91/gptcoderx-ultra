@@ -2,59 +2,163 @@
   "openapi": "3.1.0",
   "info": {
     "title": "GPT-CODER X ULTRA",
-    "version": "1.0.0",
-    "description": "Персонализиран GPT агент за създаване на MQL4/MQL5/Python код чрез DeepSeek-Chat и Reasoner."
+    "description": "Персонализиран GPT агент за създаване на MQL4/MQL5/Python код чрез DeepSeek-Chat и Reasoner.",
+    "version": "1.0.0"
   },
-  "servers": [
-    {
-      "url": "https://gptcoderx-ultra.onrender.com",
-      "description": "Production сървър"
-    }
-  ],
-  "tags": [
-    {
-      "name": "Code Generation",
-      "description": "Операции за генериране на код"
-    },
-    {
-      "name": "Search",
-      "description": "Търсене във външни източници"
-    }
-  ],
   "paths": {
     "/code/deepseek": {
       "post": {
-        "tags": ["Code Generation"],
+        "tags": [
+          "Code Generation",
+          "Code Generation"
+        ],
         "summary": "Генериране на код с DeepSeek Chat",
-        "operationId": "generateWithDeepSeek",
+        "operationId": "code_with_deepseek_code_deepseek_post",
         "requestBody": {
-          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": ["prompt"],
-                "properties": {
-                  "prompt": {
-                    "type": "string",
-                    "minLength": 10
-                  }
+                "$ref": "#/components/schemas/PromptRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
           }
+        }
+      }
+    },
+    "/code/reasoner": {
+      "post": {
+        "tags": [
+          "Code Generation",
+          "Code Generation"
+        ],
+        "summary": "Генериране на reasoning логика",
+        "operationId": "code_with_reasoner_code_reasoner_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromptRequest"
+              }
+            }
+          },
+          "required": true
         },
         "responses": {
           "200": {
-            "description": "Генериран код от DeepSeek",
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "result": {"type": "string"},
-                    "model_used": {"type": "string"}
-                  }
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/code/reasoning-chain": {
+      "post": {
+        "tags": [
+          "Code Generation",
+          "Code Generation"
+        ],
+        "summary": "Верижно разсъждение",
+        "operationId": "process_with_reasoning_chain_code_reasoning_chain_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromptRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/code/reasoning-merge": {
+      "post": {
+        "tags": [
+          "Code Generation",
+          "Code Generation"
+        ],
+        "summary": "Разсъждение със сливане на данни",
+        "operationId": "process_merge_reasoning_code_reasoning_merge_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExternalDataRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -64,40 +168,134 @@
     },
     "/search/github": {
       "post": {
-        "tags": ["Search"],
-        "summary": "Извличане на репозитории от GitHub",
-        "operationId": "searchGitHub",
+        "tags": [
+          "GitHub Search",
+          "GitHub Search"
+        ],
+        "summary": "Търсене в GitHub репозитории",
+        "description": "Заявка към GitHub API с интегрирана валидация и обработка на грешки",
+        "operationId": "search_github_repos_search_github_post",
         "requestBody": {
-          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": ["query"],
-                "properties": {
-                  "query": {
-                    "type": "string",
-                    "minLength": 3
-                  }
+                "$ref": "#/components/schemas/GitHubQuery"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GitHubRepoItem"
+                  },
+                  "type": "array",
+                  "title": "Response Search Github Repos Search Github Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
           }
+        }
+      }
+    },
+    "/search/webpilot": {
+      "post": {
+        "tags": [
+          "Web Search",
+          "WebPilot Search"
+        ],
+        "summary": "Search Webpilot",
+        "description": "Извличане на информация от уеб страници чрез WebPilot без API ключ",
+        "operationId": "search_webpilot_search_webpilot_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebPilotRequest"
+              }
+            }
+          },
+          "required": true
         },
         "responses": {
           "200": {
-            "description": "Резултати от GitHub",
+            "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
+                  "$ref": "#/components/schemas/WebPilotResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/merge/results": {
+      "post": {
+        "tags": [
+          "Data Merging",
+          "Data Merging"
+        ],
+        "summary": "Сливане на резултати от източници",
+        "description": "Обединява GitHub, WebPilot и MQL5 резултати в един списък с релевантност.",
+        "operationId": "merge_results_merge_results_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MergeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
                   "items": {
-                    "type": "object",
-                    "properties": {
-                      "name": {"type": "string"},
-                      "url": {"type": "string", "format": "uri"}
-                    }
-                  }
+                    "$ref": "#/components/schemas/MergedItem"
+                  },
+                  "type": "array",
+                  "title": "Response Merge Results Merge Results Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -107,12 +305,582 @@
     }
   },
   "components": {
-    "securitySchemes": {
-      "APIKeyHeader": {
-        "type": "apiKey",
-        "name": "X-API-KEY",
-        "in": "header"
+    "schemas": {
+      "ExternalDataRequest": {
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "title": "Prompt"
+          },
+          "github_results": {
+            "items": {
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Github Results",
+            "default": []
+          },
+          "webpilot_results": {
+            "type": "object",
+            "title": "Webpilot Results",
+            "default": {}
+          },
+          "mql5_results": {
+            "items": {
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Mql5 Results",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "prompt"
+        ],
+        "title": "ExternalDataRequest"
+      },
+      "GitHubItem": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "default": ""
+          },
+          "url": {
+            "type": "string",
+            "maxLength": 2083,
+            "minLength": 1,
+            "format": "uri",
+            "title": "Url"
+          },
+          "stars": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stars",
+            "default": 0
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "last_updated": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Updated"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "url"
+        ],
+        "title": "GitHubItem"
+      },
+      "GitHubQuery": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 3,
+            "title": "Query",
+            "examples": [
+              "python trading bot"
+            ]
+          },
+          "per_page": {
+            "type": "integer",
+            "maximum": 30,
+            "minimum": 1,
+            "title": "Per Page",
+            "default": 10
+          }
+        },
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "GitHubQuery"
+      },
+      "GitHubRepoItem": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "stars": {
+            "type": "integer",
+            "minimum": 0,
+            "title": "Stars"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "license": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "License"
+          },
+          "last_updated": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Last Updated"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "url",
+          "description",
+          "stars",
+          "language",
+          "license",
+          "last_updated"
+        ],
+        "title": "GitHubRepoItem"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "MQL5Item": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Title"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 10,
+            "title": "Description"
+          },
+          "url": {
+            "type": "string",
+            "maxLength": 2083,
+            "minLength": 1,
+            "format": "uri",
+            "title": "Url"
+          },
+          "votes": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Votes",
+            "default": 0
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "description",
+          "url"
+        ],
+        "title": "MQL5Item"
+      },
+      "MergeRequest": {
+        "properties": {
+          "github_results": {
+            "items": {
+              "$ref": "#/components/schemas/GitHubItem"
+            },
+            "type": "array",
+            "title": "Github Results"
+          },
+          "webpilot_results": {
+            "items": {
+              "$ref": "#/components/schemas/WebPilotResult"
+            },
+            "type": "array",
+            "title": "Webpilot Results"
+          },
+          "mql5_results": {
+            "items": {
+              "$ref": "#/components/schemas/MQL5Item"
+            },
+            "type": "array",
+            "title": "Mql5 Results"
+          },
+          "content_limit": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 5000,
+                "minimum": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Limit",
+            "default": 1000
+          }
+        },
+        "type": "object",
+        "title": "MergeRequest"
+      },
+      "MergedItem": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "link": {
+            "type": "string",
+            "title": "Link"
+          },
+          "metadata": {
+            "type": "object",
+            "title": "Metadata"
+          },
+          "relevance_score": {
+            "type": "number",
+            "title": "Relevance Score"
+          },
+          "last_updated": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Updated"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source",
+          "title",
+          "content",
+          "link",
+          "metadata",
+          "relevance_score",
+          "last_updated"
+        ],
+        "title": "MergedItem"
+      },
+      "PromptRequest": {
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "title": "Prompt"
+          },
+          "max_tokens": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Tokens",
+            "default": 1024
+          },
+          "temperature": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Temperature",
+            "default": 0.7
+          }
+        },
+        "type": "object",
+        "required": [
+          "prompt"
+        ],
+        "title": "PromptRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "WebPilotRequest": {
+        "properties": {
+          "link": {
+            "type": "string",
+            "maxLength": 2083,
+            "minLength": 1,
+            "format": "uri",
+            "title": "Link",
+            "default": "https://en.wikipedia.org/wiki/Artificial_intelligence",
+            "examples": [
+              "https://en.wikipedia.org/wiki/Artificial_intelligence"
+            ]
+          },
+          "query": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 3,
+            "title": "Query",
+            "default": "Main developments in AI"
+          },
+          "language": {
+            "type": "string",
+            "pattern": "^[a-z]{2}(-[A-Z]{2})?$",
+            "title": "Language",
+            "default": "en"
+          },
+          "retry": {
+            "type": "boolean",
+            "title": "Retry",
+            "description": "Retry with different approach if True",
+            "default": false
+          }
+        },
+        "type": "object",
+        "title": "WebPilotRequest"
+      },
+      "WebPilotResponse": {
+        "properties": {
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          },
+          "meta": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Meta"
+          },
+          "links": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Links"
+          },
+          "search_results": {
+            "items": {
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Search Results"
+          },
+          "tips": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tips"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "content",
+          "meta",
+          "links",
+          "search_results",
+          "tips"
+        ],
+        "title": "WebPilotResponse"
+      },
+      "WebPilotResult": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Title"
+          },
+          "content": {
+            "type": "string",
+            "minLength": 10,
+            "title": "Content"
+          },
+          "link": {
+            "type": "string",
+            "maxLength": 2083,
+            "minLength": 1,
+            "format": "uri",
+            "title": "Link"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source",
+            "default": "Web"
+          },
+          "relevance": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1,
+                "minimum": 0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relevance",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "content",
+          "link"
+        ],
+        "title": "WebPilotResult"
       }
     }
-  }
+  },
+  "servers": [
+    {
+      "url": "https://gptcoderx-ultra.onrender.com",
+      "description": "Production сървър"
+    }
+  ]
 }
