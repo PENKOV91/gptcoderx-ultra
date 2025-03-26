@@ -102,7 +102,7 @@ async def health_check():
     return JSONResponse(content={"status": "OK", "timestamp": datetime.utcnow().isoformat()})
 
 # ======================
-# Custom OpenAPI (за GPT Plugin, Swagger и т.н.)
+# ✅ Custom OpenAPI (включително `servers` секцията)
 # ======================
 @app.get("/openapi.json", include_in_schema=False)
 async def custom_openapi():
@@ -112,6 +112,15 @@ async def custom_openapi():
         description=app.description,
         routes=app.routes,
     )
+
+    # 💡 Добавено ръчно за GPT Plugins
+    openapi_schema["servers"] = [
+        {
+            "url": "https://gptcoderx-ultra.onrender.com",
+            "description": "Production сървър"
+        }
+    ]
+
     return JSONResponse(content=openapi_schema)
 
 app.mount(
