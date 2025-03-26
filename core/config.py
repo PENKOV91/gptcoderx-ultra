@@ -7,6 +7,6 @@ class Settings(BaseSettings):
     WEBPILOT_API_KEY: str = os.getenv("WEBPILOT_API_KEY", "")
 
     class Config:
-        env_file = ".gitignore"
+        env_file = ".env"
 
 settings = Settings()
